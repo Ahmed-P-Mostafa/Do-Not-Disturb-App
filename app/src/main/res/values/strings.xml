@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">DND App</string>
+    <string name="ask_for_permission">Ask for permission</string>
+    <string name="permission_letter">This app needs DND permission to can switch on and off the DND mode</string>
+    <string name="next">Next</string>
+    <string name="stop">Stop</string>
+    <string name="start">Start</string>
+</resources>
