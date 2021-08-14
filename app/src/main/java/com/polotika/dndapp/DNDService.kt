@@ -8,6 +8,7 @@ import android.os.CountDownTimer
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import java.util.*
 
 
 class DNDService : Service() {
@@ -23,14 +24,23 @@ class DNDService : Service() {
 
     override fun onCreate() {
         Log.d(TAG, "onCreate: ")
+        generateForegroundNotification()
 
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when(intent?.action){
             "start" ->{
-                generateForegroundNotification()}
-            "stop" ->{stopSelf()}
+                makeTheAppSilent()
+                val millis = intent.getLongExtra("millis", 60000*60*8L)
+                generateForegroundNotification()
+                startTimer(millis,1000)
+
+            }
+            "stop" ->{
+                makeTheAppNormal()
+                stopSelf()
+            }
         }
 
 
@@ -41,12 +51,27 @@ class DNDService : Service() {
     private fun startTimer(millis :Long,interval:Long){
         object : CountDownTimer(millis, interval) {
 
+
             override fun onTick(millisUntilFinished: Long) {
-               // mTextField.setText("seconds remaining: " + millisUntilFinished / 1000)
+                var millis = millisUntilFinished
+                val hourInMillis =  1000*60*60L
+                val minutesInMillis = 1000*60L
+                val secondsInMillis = 1000L
+
+                val hours =   millisUntilFinished / hourInMillis
+                millis = hours*hourInMillis - millisUntilFinished
+
+                val minutes = millis % minutesInMillis
+                millis = minutes*minutesInMillis - millis
+                val seconds = millis/ secondsInMillis
+                Log.d(TAG, "onTick: $hourInMillis")
+                    updateNotification("$hours hours and $minutes minutes $seconds remaining: " )
             }
 
             override fun onFinish() {
-                //mTextField.setText("done!")
+                builder.setContentText("Done").setOngoing(false)
+                mNotificationManager?.notify(notificationID,builder.build())
+                stopSelf()
             }
         }.start()
     }
@@ -66,25 +91,38 @@ class DNDService : Service() {
                 notificationChannel.enableLights(false)
                 notificationChannel.lockscreenVisibility = Notification.VISIBILITY_SECRET
                 mNotificationManager?.createNotificationChannel(notificationChannel)
-
-                mNotificationManager?.createNotificationChannel(notificationChannel)
             }
 
             builder = NotificationCompat.Builder(this,notificationChannelID)
-            builder.setContentTitle("DND Mode is on")
+            builder.setContentTitle("Do not disturb")
                 .setTicker("Ticker")
-                .setContentText("") //                    , swipe down for more options.
-                .setSmallIcon(R.drawable.ic_android_black_24dp)
+                .setContentText("DND Mode is on...") //                    , swipe down for more options.
+                .setSmallIcon(R.drawable.ic_sleep)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setWhen(0)
                 .setOnlyAlertOnce(true)
                 .setContentIntent(pendingIntent)
                 .setOngoing(true)
             builder.color = resources.getColor(R.color.purple_200)
 
+
             startForeground(notificationID, builder.build())
         }
 
+    }
+    private fun updateNotification(text:String){
+        builder.setContentText(text)
+        mNotificationManager?.notify(notificationID,builder.build())
+    }
+
+    private fun makeTheAppSilent() {
+        Log.d(TAG, "makeTheAppSilent: Silent")
+
+        mNotificationManager?.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
+    }
+
+    private fun makeTheAppNormal() {
+        Log.d(TAG, "makeTheAppNormal: Alarms")
+        mNotificationManager?.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
     }
 
 

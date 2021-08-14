@@ -33,26 +33,29 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-        isMyServiceRunning(DNDService::class.java).apply {
-            when(this){
-                true->{binding.startButton.text = getString(R.string.stop)}
-                false->{binding.startButton.text = getString(R.string.start)}
 
-            }
-        }
         binding.timePicker.hour = getHour()
         binding.timePicker.minute = getMinute()
         binding.startButton.setOnClickListener {
-            if (isMyServiceRunning(DNDService::class.java)){
+            binding.startButton.text = "Stop"
+
                 val startIntent = Intent(this,DNDService::class.java)
                 startIntent.action = "start"
-
-                startService(startIntent)
-            }else{
+            val calendar = Calendar.getInstance()
+            val calendar2 = Calendar.getInstance()
+            calendar.set(Calendar.HOUR_OF_DAY,binding.timePicker.hour)
+            calendar.set(Calendar.MINUTE,binding.timePicker.minute)
+            val millis = calendar.timeInMillis - calendar2.timeInMillis
+                startIntent.putExtra("millis",millis)
+            Log.d(TAG, "onCreate: $millis")
+            Log.d(TAG, "onCreate: ${calendar.timeInMillis}")
+            Log.d(TAG, "onCreate: ${calendar2.timeInMillis}")
+            startService(startIntent)
+            /*
                 val stopIntent = Intent(this,DNDService::class.java)
                 stopIntent.action = "stop"
                 startService(stopIntent)
-            }
+            */
 
         }
 
@@ -63,6 +66,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        isMyServiceRunning(DNDService::class.java).apply {
+            when(this){
+                true->{binding.startButton.text = getString(R.string.stop)}
+                false->{binding.startButton.text = getString(R.string.start)}
+
+            }
+        }
         if (!manager.isNotificationPolicyAccessGranted){
             startActivity(Intent(this,DNDPermissionActivity::class.java))
             finish()
@@ -89,15 +99,6 @@ class MainActivity : AppCompatActivity() {
 
 
 
-    private fun makeTheAppSilent() {
-        Log.d(TAG, "makeTheAppSilent: Silent")
 
-        manager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
-    }
-
-    private fun makeTheAppNormal() {
-        Log.d(TAG, "makeTheAppNormal: Alarms")
-        manager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
-    }
 
 }
