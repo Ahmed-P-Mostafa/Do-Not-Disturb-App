@@ -42,7 +42,8 @@ class DNDService : Service() {
             START -> {
                 makeTheAppSilent()
                 val millis = intent.getLongExtra("millis", 60000 * 60 * 8L)
-                testTimer(1, 1)
+                val minutesSize = millis/1000/60
+                startTimer(minutesSize,1)
 
 
             }
@@ -59,8 +60,9 @@ class DNDService : Service() {
 
     private fun getMinuteText(t: Long, minutesSize: Long): String {
         val d = minutesSize - t
+
         val minutes: Int = (d % 60).toInt()
-        val hours: Int = ((d / 60) / 10).toInt()
+        val hours: Int = ((d / 60) % 24).toInt()
        return if (hours>0){
            "$hours hours and $minutes minutes remaining until DND is off"
        }else{
@@ -69,7 +71,7 @@ class DNDService : Service() {
        }
     }
 
-    private fun testTimer(minutesSize: Long, intervalInMinutes: Long) {
+    private fun startTimer(minutesSize: Long, intervalInMinutes: Long) {
 
         Observable.interval(intervalInMinutes, TimeUnit.MINUTES).take(minutesSize)
             .observeOn(AndroidSchedulers.mainThread())
@@ -77,7 +79,6 @@ class DNDService : Service() {
                 override fun onSubscribe(d: Disposable) {
                     makeTheAppSilent()
                     generateForegroundNotification(0, minutesSize)
-                    //updateNotification(getMinuteText(0, minutesSize), true)
                 }
 
                 override fun onNext(t: Long) {

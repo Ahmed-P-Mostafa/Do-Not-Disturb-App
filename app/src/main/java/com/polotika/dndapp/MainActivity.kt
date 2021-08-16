@@ -1,10 +1,12 @@
 package com.polotika.dndapp
 
 import android.app.ActivityManager
+import android.app.AlarmManager
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -41,7 +43,10 @@ class MainActivity : AppCompatActivity() {
                     val calendar2 = Calendar.getInstance()
                     calendar.set(Calendar.HOUR_OF_DAY, binding.timePicker.hour)
                     calendar.set(Calendar.MINUTE, binding.timePicker.minute)
-                    val millis = calendar.timeInMillis - calendar2.timeInMillis
+                    var millis = calendar.timeInMillis - calendar2.timeInMillis
+                    if (millis<0){
+                        millis += AlarmManager.INTERVAL_DAY
+                    }
                     startIntent.putExtra("millis", millis)
 
                     startService(startIntent)
