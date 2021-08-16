@@ -144,6 +144,7 @@ class DNDService : Service() {
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .addAction(stopAction)
                 .setContentIntent(pendingIntent)
+                .setOnlyAlertOnce(true)
                 .setOngoing(true)
             builder.color = resources.getColor(R.color.purple_200)
 
