@@ -4,19 +4,15 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.os.CountDownTimer
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import io.reactivex.Observable
 import io.reactivex.Observer
-import io.reactivex.Scheduler
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
-import kotlin.math.min
 
 
 class DNDService : Service() {
@@ -26,6 +22,10 @@ class DNDService : Service() {
     private val notificationID = 1
     private val notificationChannelID = "notificationChannelID"
     private val notificationChannelName = "notificationChannelName"
+
+    // constants
+    private val STOP = "STOP"
+    private val START = "START"
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
@@ -38,15 +38,14 @@ class DNDService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
-            "start" -> {
+            START -> {
                 makeTheAppSilent()
                 val millis = intent.getLongExtra("millis", 60000 * 60 * 8L)
-                //generateForegroundNotification()
                 testTimer(1, 1)
 
 
             }
-            "stop" -> {
+            STOP -> {
                 makeTheAppNormal()
                 stopSelf()
             }
@@ -71,12 +70,12 @@ class DNDService : Service() {
             .subscribeOn(Schedulers.io()).subscribe(object : Observer<Long> {
                 override fun onSubscribe(d: Disposable) {
                     makeTheAppSilent()
-                    generateForegroundNotification(0,minutesSize)
+                    generateForegroundNotification(0, minutesSize)
                     //updateNotification(getMinuteText(0, minutesSize), true)
                 }
 
                 override fun onNext(t: Long) {
-                    updateNotification(text = getMinuteText(t+1, minutesSize), true)
+                    updateNotification(text = getMinuteText(t + 1, minutesSize), true)
                 }
 
                 override fun onError(e: Throwable) {
@@ -87,24 +86,18 @@ class DNDService : Service() {
                 override fun onComplete() {
                     updateNotification(text = "DND is Closed", onGoing = false)
                     makeTheAppNormal()
-                    stopService(Intent(this@DNDService,DNDService::class.java))
-                    //stopSelf()
+                    stopSelf()
                 }
 
             })
     }
 
-    override fun onDestroy() {
-        stopService(Intent(this,DNDService::class.java))
-        super.onDestroy()
-    }
 
-
-    private fun generateForegroundNotification(t: Long,minutesSize: Long) {
+    private fun generateForegroundNotification(t: Long, minutesSize: Long) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val intentMainLanding = Intent(this, MainActivity::class.java)
+            val intentMainLanding = Intent(applicationContext, MainActivity::class.java)
             val pendingIntent =
-                PendingIntent.getActivity(this, 0, intentMainLanding, 0)
+                PendingIntent.getActivity(applicationContext, 0, intentMainLanding, 0)
             if (mNotificationManager == null) {
                 mNotificationManager =
                     this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -119,18 +112,33 @@ class DNDService : Service() {
                 notificationChannel.lockscreenVisibility = Notification.VISIBILITY_SECRET
                 mNotificationManager?.createNotificationChannel(notificationChannel)
             }
+            val stopIntent = Intent(applicationContext, DNDService::class.java)
+            stopIntent.action = "stop"
 
-            builder = NotificationCompat.Builder(this, notificationChannelID)
-            builder.setContentTitle("Do not disturb")
-                .setTicker("Ticker")
-                .setContentText(getMinuteText(t,minutesSize)) //                    , swipe down for more options.
+            val stopPendingIntent = PendingIntent.getService(
+                applicationContext,
+                0,
+                stopIntent,
+                PendingIntent.FLAG_ONE_SHOT
+            )
+
+            val stopAction = NotificationCompat.Action(0, getString(R.string.stop_dnd), stopPendingIntent)
+
+            builder = NotificationCompat.Builder(applicationContext, notificationChannelID)
+            builder.setContentTitle(getString(R.string.notif_title))
+                .setTicker(getString(R.string.notif_ticker))
+                .setContentText(
+                    getMinuteText(
+                        t,
+                        minutesSize
+                    )
+                )
                 .setSmallIcon(R.drawable.ic_sleep)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setOnlyAlertOnce(true)
+                .addAction(stopAction)
                 .setContentIntent(pendingIntent)
                 .setOngoing(true)
             builder.color = resources.getColor(R.color.purple_200)
-
 
             startForeground(notificationID, builder.build())
         }
@@ -139,13 +147,14 @@ class DNDService : Service() {
 
     private fun updateNotification(text: String, onGoing: Boolean) {
         builder.setContentText(text)
-        builder.setOngoing(onGoing)
+        when (onGoing) {
+            false -> builder.clearActions()
+        }
         mNotificationManager?.notify(notificationID, builder.build())
     }
 
     private fun makeTheAppSilent() {
         Log.d(TAG, "makeTheAppSilent: Silent")
-
         mNotificationManager?.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
     }
 

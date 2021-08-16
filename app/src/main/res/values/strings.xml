@@ -5,4 +5,7 @@
     <string name="next">Next</string>
     <string name="stop">Stop</string>
     <string name="start">Start</string>
+    <string name="stop_dnd">Stop DND</string>
+    <string name="notif_title">Do not disturb</string>
+    <string name="notif_ticker">Do Not Disturb mode is on</string>
 </resources>

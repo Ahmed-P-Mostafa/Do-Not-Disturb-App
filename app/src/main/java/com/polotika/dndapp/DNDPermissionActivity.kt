@@ -38,7 +38,7 @@ class DNDPermissionActivity : AppCompatActivity() {
             finish()
         }
     }
-    fun requestNotificationPolicyRequest() {
+    private fun requestNotificationPolicyRequest() {
 
         if (!manager.isNotificationPolicyAccessGranted) {
             val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)

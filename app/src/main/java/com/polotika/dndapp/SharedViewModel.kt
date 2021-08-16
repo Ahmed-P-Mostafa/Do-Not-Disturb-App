@@ -1,21 +1,31 @@
 package com.polotika.dndapp
 
+import android.app.ActivityManager
 import android.app.Application
-import android.os.CountDownTimer
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
+import java.util.*
 
 class SharedViewModel(application: Application) :AndroidViewModel(application) {
 
-   /* private val timer = object : CountDownTimer(30000, 1000) {
-
-        override fun onTick(millisUntilFinished: Long) {
-            mTextField.setText("seconds remaining: " + millisUntilFinished / 1000)
+    fun isMyServiceRunning(serviceClass: Class<*>): Boolean {
+        val manager = getApplication<Application>().getSystemService(AppCompatActivity.ACTIVITY_SERVICE) as ActivityManager
+        for (service in manager.getRunningServices(Int.MAX_VALUE)) {
+            if (serviceClass.name == service.service.className) {
+                return true
+            }
         }
+        return false
+    }
 
-        override fun onFinish() {
-            mTextField.setText("done!")
-        }
-    }.start()*/
+    fun getHour(): Int {
+        val calendar = Calendar.getInstance()
+        return calendar.get(Calendar.HOUR_OF_DAY)
+    }
+
+    fun getMinute(): Int {
+        val calendar = Calendar.getInstance()
+        return calendar.get(Calendar.MINUTE)
+    }
 
 }
