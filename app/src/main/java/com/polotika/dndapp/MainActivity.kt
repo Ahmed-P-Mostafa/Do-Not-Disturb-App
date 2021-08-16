@@ -31,12 +31,12 @@ class MainActivity : AppCompatActivity() {
         binding.startButton.setOnClickListener {
             val button = it as TextView
             when (button.text) {
-                START -> {
+                getString(R.string.start) -> {
                     binding.startButton.text = getString(R.string.stop)
 
 
                     val startIntent = Intent(this, DNDService::class.java)
-                    startIntent.action = "start"
+                    startIntent.action = START
                     val calendar = Calendar.getInstance()
                     val calendar2 = Calendar.getInstance()
                     calendar.set(Calendar.HOUR_OF_DAY, binding.timePicker.hour)
@@ -46,10 +46,10 @@ class MainActivity : AppCompatActivity() {
 
                     startService(startIntent)
                 }
-                STOP -> {
+                getString(R.string.stop) -> {
                     binding.startButton.text = getString(R.string.start)
                     val stopIntent = Intent(this, DNDService::class.java)
-                    stopIntent.action = "stop"
+                    stopIntent.action = STOP
                     startService(stopIntent)
                 }
             }

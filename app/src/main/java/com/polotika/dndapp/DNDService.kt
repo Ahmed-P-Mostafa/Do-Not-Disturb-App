@@ -37,6 +37,7 @@ class DNDService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         when (intent?.action) {
             START -> {
                 makeTheAppSilent()
@@ -60,7 +61,12 @@ class DNDService : Service() {
         val d = minutesSize - t
         val minutes: Int = (d % 60).toInt()
         val hours: Int = ((d / 60) / 10).toInt()
-        return "$hours hours and $minutes minutes remaining"
+       return if (hours>0){
+           "$hours hours and $minutes minutes remaining until DND is off"
+       }else{
+           "$minutes minutes remaining until DND is off"
+
+       }
     }
 
     private fun testTimer(minutesSize: Long, intervalInMinutes: Long) {
@@ -113,7 +119,7 @@ class DNDService : Service() {
                 mNotificationManager?.createNotificationChannel(notificationChannel)
             }
             val stopIntent = Intent(applicationContext, DNDService::class.java)
-            stopIntent.action = "stop"
+            stopIntent.action = STOP
 
             val stopPendingIntent = PendingIntent.getService(
                 applicationContext,
