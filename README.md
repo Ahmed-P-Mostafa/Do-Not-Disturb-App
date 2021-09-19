@@ -20,7 +20,7 @@ The things you'll need in order to use the app and how to install them
 
 ### How to use
 
-<img src="app/ScreenShots/1.jpg" width="200"> <img src="app/ScreenShots/2.jpg" width="200"> <img src="app/ScreenShots/3.jpg" width="200">
+<img src="ScreenShots/1.jpg" width="200"> <img src="ScreenShots/2.jpg" width="200"> <img src="ScreenShots/3.jpg" width="200">
 
 
 
