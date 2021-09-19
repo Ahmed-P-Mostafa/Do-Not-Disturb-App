@@ -13,15 +13,19 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
+import android.os.CountDownTimer
+import android.os.SystemClock
 
 
 class DNDService : Service() {
+    // TODO try Alarm Manager in background to solve timer bug and shutdown issue
     lateinit var builder: NotificationCompat.Builder
     private var mNotificationManager: NotificationManager? = null
     private val TAG = "DNDService"
     private val notificationID = 1
     private val notificationChannelID = "notificationChannelID"
     private val notificationChannelName = "notificationChannelName"
+    private var timer: CountDownTimer? = null
 
     // constants
     private val STOP = "STOP"
@@ -37,38 +41,76 @@ class DNDService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.d(TAG, "onStartCommand: ${SystemClock.uptimeMillis()}")
         mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         when (intent?.action) {
             START -> {
-                makeTheAppSilent()
+                Log.d(TAG, "start: ${SystemClock.uptimeMillis()}")
+                startDNDMode()
                 val millis = intent.getLongExtra("millis", 60000 * 60 * 8L)
-                val minutesSize = millis/1000/60
-                startTimer(minutesSize,1)
+                val minutesSize = millis / 1000 / 60
+                generateForegroundNotification(minutesSize)
+
+                //startTimer(minutesSize,1)
+
+                timer = object : CountDownTimer(millis, 5000) {
+                    override fun onTick(millisUntilFinished: Long) {
+                        Log.d(TAG, "onTick: $millisUntilFinished")
+                        val t: Int = (millisUntilFinished / 1000 / 60).toInt()
+
+                        updateNotification(text = generateMinuteText(t + 1), true)
+
+                    }
+
+                    override fun onFinish() {
+                        Log.d(TAG, "onFinish: ")
+                        updateNotification(text = "DND is Closed", onGoing = false)
+                        stopDNDMode()
+                        stopForeground(true)
+                        stopSelf()
+                    }
+
+                }.start()
 
 
             }
             STOP -> {
-                makeTheAppNormal()
+                Log.d(TAG, "stop: ${SystemClock.uptimeMillis()}")
+                stopDNDMode()
+                stopForeground(true)
+                stopForeground(STOP_FOREGROUND_REMOVE)
+                timer?.cancel()
                 stopSelf()
             }
         }
 
 
-        Log.d(TAG, "onStartCommand: ")
         return START_STICKY
     }
 
-    private fun getMinuteText(t: Long, minutesSize: Long): String {
-        val d = minutesSize - t
+    private fun generateMinuteText(t: Int, minutesSize: Int): String {
+        val d = t - minutesSize
 
-        val minutes: Int = (d % 60).toInt()
-        val hours: Int = ((d / 60) % 24).toInt()
-       return if (hours>0){
-           "$hours hours and $minutes minutes remaining until DND is off"
-       }else{
-           "$minutes minutes remaining until DND is off"
+        val minutes: Int = (d % 60)
+        val hours: Int = ((d / 60) % 24)
+        return if (hours > 0) {
+            "$hours hours and $minutes minutes remaining until DND is off"
+        } else {
+            "$minutes minutes remaining until DND is off"
 
-       }
+        }
+    }
+
+    private fun generateMinuteText(d: Int): String {
+
+        val minutes: Int = (d % 60)
+        val hours: Int = ((d / 60) % 24)
+        return if (hours > 0) {
+            "$hours hours and $minutes minutes remaining until DND is off"
+        } else {
+            "$minutes minutes remaining until DND is off"
+
+        }
     }
 
     private fun startTimer(minutesSize: Long, intervalInMinutes: Long) {
@@ -77,30 +119,36 @@ class DNDService : Service() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(Schedulers.io()).subscribe(object : Observer<Long> {
                 override fun onSubscribe(d: Disposable) {
-                    makeTheAppSilent()
-                    generateForegroundNotification(0, minutesSize)
+                    startDNDMode()
+                    generateForegroundNotification(minutesSize)
                 }
 
                 override fun onNext(t: Long) {
-                    updateNotification(text = getMinuteText(t + 1, minutesSize), true)
+                    updateNotification(
+                        text = generateMinuteText(
+                            (t + 1).toInt(),
+                            minutesSize.toInt()
+                        ), true
+                    )
                 }
 
                 override fun onError(e: Throwable) {
-                    makeTheAppNormal()
+                    stopDNDMode()
                     Log.e(TAG, "onError: ${e.localizedMessage}")
                 }
 
                 override fun onComplete() {
                     updateNotification(text = "DND is Closed", onGoing = false)
-                    makeTheAppNormal()
+                    stopDNDMode()
                     stopSelf()
                 }
 
             })
+
     }
 
-
-    private fun generateForegroundNotification(t: Long, minutesSize: Long) {
+    private fun generateForegroundNotification(minutesSize: Long) {
+        Log.d(TAG, "generateForegroundNotification: ${SystemClock.uptimeMillis()}")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val intentMainLanding = Intent(applicationContext, MainActivity::class.java)
             val pendingIntent =
@@ -129,15 +177,16 @@ class DNDService : Service() {
                 PendingIntent.FLAG_ONE_SHOT
             )
 
-            val stopAction = NotificationCompat.Action(0, getString(R.string.stop_dnd), stopPendingIntent)
+            val stopAction =
+                NotificationCompat.Action(0, getString(R.string.stop_dnd), stopPendingIntent)
 
             builder = NotificationCompat.Builder(applicationContext, notificationChannelID)
             builder.setContentTitle(getString(R.string.notif_title))
                 .setTicker(getString(R.string.notif_ticker))
                 .setContentText(
-                    getMinuteText(
-                        t,
-                        minutesSize
+                    generateMinuteText(
+                        0,
+                        minutesSize.toInt()
                     )
                 )
                 .setSmallIcon(R.drawable.ic_sleep)
@@ -146,7 +195,7 @@ class DNDService : Service() {
                 .setContentIntent(pendingIntent)
                 .setOnlyAlertOnce(true)
                 .setOngoing(true)
-            builder.color = resources.getColor(R.color.purple_200)
+            builder.color = getColor(R.color.purple_200)
 
             startForeground(notificationID, builder.build())
         }
@@ -154,6 +203,7 @@ class DNDService : Service() {
     }
 
     private fun updateNotification(text: String, onGoing: Boolean) {
+        Log.d(TAG, "updateNotification: ${SystemClock.uptimeMillis()}")
         builder.setContentText(text)
         when (onGoing) {
             false -> builder.clearActions()
@@ -161,12 +211,12 @@ class DNDService : Service() {
         mNotificationManager?.notify(notificationID, builder.build())
     }
 
-    private fun makeTheAppSilent() {
+    private fun startDNDMode() {
         Log.d(TAG, "makeTheAppSilent: Silent")
         mNotificationManager?.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
     }
 
-    private fun makeTheAppNormal() {
+    private fun stopDNDMode() {
         Log.d(TAG, "makeTheAppNormal: Alarms")
         mNotificationManager?.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
     }

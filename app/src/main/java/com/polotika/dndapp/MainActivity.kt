@@ -5,10 +5,12 @@ import android.app.AlarmManager
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.polotika.dndapp.databinding.ActivityMainBinding
@@ -22,6 +24,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val viewModel: SharedViewModel by viewModels()
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
@@ -49,7 +52,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     startIntent.putExtra("millis", millis)
 
-                    startService(startIntent)
+                    startForegroundService(startIntent)
                 }
                 getString(R.string.stop) -> {
                     binding.startButton.text = getString(R.string.start)
