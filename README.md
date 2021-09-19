@@ -20,11 +20,8 @@ The things you'll need in order to use the app and how to install them
 
 ### How to use
 
-<img src="app/docs/Screenshot_signup.jpg" width="200"> <img src="app/docs/Screenshot_home_menu.jpg" width="200"> <img src="app/docs/Screenshot_add_new_lecture.jpg" width="200">
+<img src="app/docs/1.jpg" width="200"> <img src="app/docs/2.jpg" width="200"> <img src="app/docs/3.jpg" width="200">
 
-<img src="app/docs/Screenshot_date_dialog.jpg" width="200"> <img src="app/docs/Screenshot_time_dialog.jpg" width="200"> <img src="app/docs/Screenshot_perior_notification.jpg.jpg" width="200">
-
-[View all screenshots](docs/all-screenshots.md)
 
 
 ## Built with
