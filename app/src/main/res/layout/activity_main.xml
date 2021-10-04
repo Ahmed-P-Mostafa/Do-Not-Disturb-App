@@ -7,7 +7,7 @@
 
         <variable
             name="viewModel"
-            type="com.polotika.dndapp.SharedViewModel" />
+            type="com.polotika.dndapp.MainViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -34,7 +34,8 @@
             android:id="@+id/startButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/start"
+            android:text="@{viewModel.startButtonTextEvent}"
+            tools:text="@string/start"
             android:textAllCaps="false"
             android:textSize="18sp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -42,13 +43,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/timePicker"
             android:layout_marginTop="16dp"/>
-
-        <Button
-            android:id="@+id/intent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/startButton"
-            app:layout_constraintStart_toStartOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

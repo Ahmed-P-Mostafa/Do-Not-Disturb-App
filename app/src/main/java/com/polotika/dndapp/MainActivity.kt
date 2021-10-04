@@ -1,14 +1,11 @@
 package com.polotika.dndapp
 
-import android.app.ActivityManager
 import android.app.AlarmManager
 import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -18,7 +15,12 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.lifecycleScope
 import com.polotika.dndapp.databinding.ActivityMainBinding
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import java.util.*
 
 /*
@@ -27,34 +29,23 @@ import java.util.*
 *  2- try alarm manager and figure how to calc remaining time
 *  3- give permission for auto start and notification permission for changing device mode
 *  */
+
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
-    lateinit var binding: ActivityMainBinding
-    private val manager: NotificationManager by lazy {
-        getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    }
 
-    private val viewModel: SharedViewModel by viewModels()
-    @RequiresApi(Build.VERSION_CODES.O)
+    lateinit var binding: ActivityMainBinding
+
+
+    private val viewModel: MainViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         binding.viewModel = viewModel
-
-        val STOP = "STOP"
-        val START = "START"
-
-        binding.intent.setOnClickListener {/*
-            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-            val uri = Uri.parse("package:$packageName")
-            intent.data = uri
-            startActivity(intent)*/
-
-            checkForDeviceManufacture()
-        }
+        observers()
 
         binding.startButton.setOnClickListener {
-            val button = it as TextView
+          /*  val button = it as TextView
             when (button.text) {
                 getString(R.string.start) -> {
                     binding.startButton.text = getString(R.string.stop)
@@ -70,6 +61,8 @@ class MainActivity : AppCompatActivity() {
                     if (millis<0){
                         millis += AlarmManager.INTERVAL_DAY
                     }
+
+                    onStartButtonClicked(millis)
                     startIntent.putExtra("millis", millis)
 
                     startForegroundService(startIntent)
@@ -80,28 +73,45 @@ class MainActivity : AppCompatActivity() {
                     stopIntent.action = STOP
                     startService(stopIntent)
                 }
-            }
+            }*/
+            val calendar = Calendar.getInstance()
+            calendar.set(Calendar.HOUR_OF_DAY, binding.timePicker.hour)
+            calendar.set(Calendar.MINUTE, binding.timePicker.minute)
+            val millis = calendar.timeInMillis
+            viewModel.onStartButtonClicked(millis)
         }
     }
 
     override fun onResume() {
         super.onResume()
-        viewModel.isMyServiceRunning(DNDService::class.java).apply {
-            when (this) {
-                true -> {
-                    binding.startButton.text = getString(R.string.stop)
-                }
-                false -> {
-                    binding.startButton.text = getString(R.string.start)
-                }
+        viewModel.isMyServiceRunning(DNDService::class.java)
+        viewModel.isNotificationPoliceGranted()
+    }
 
+    private fun observers(){
+        viewModel.startButtonTextEvent.observe(this@MainActivity) {
+            binding.startButton.text = it
+        }
+
+        lifecycleScope.launchWhenStarted {
+            viewModel.navigationEvent.collect {
+                when(it){
+                    is MainActivityNavigationEvent.NavigateMainActivityToPermissionsActivity ->{
+                        startActivity(Intent(this@MainActivity,DNDPermissionActivity::class.java))
+                        finish()
+                    }
+                    is MainActivityNavigationEvent.NavigateMainActivityToDndService -> {
+                        if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
+                            startForegroundService(it.intent)
+                        }else{
+                            startService(it.intent)
+                        }
+                    }
+                }
             }
         }
-        if (!manager.isNotificationPolicyAccessGranted) {
-            // if user canceled the permission while app is running go to Ask permission again
-            startActivity(Intent(this, DNDPermissionActivity::class.java))
-            finish()
-        }
+
+
     }
 
     private fun checkForDeviceManufacture() {
