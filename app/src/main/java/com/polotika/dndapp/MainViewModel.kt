@@ -68,7 +68,13 @@ class MainViewModel @Inject constructor(@ApplicationContext private val applicat
 
     fun onStartButtonClicked(value:Long){
         if (!isMyServiceRunning(DNDService::class.java)){
-            sendStartServiceIntent(value)
+            val calendar = Calendar.getInstance()
+            var millis = value
+            if (millis<calendar.timeInMillis){
+                millis += AlarmManager.INTERVAL_DAY
+            }
+
+            sendStartServiceIntent(millis)
         }else{
             sendStopServiceIntent()
         }
@@ -91,15 +97,10 @@ class MainViewModel @Inject constructor(@ApplicationContext private val applicat
 
         val startIntent = Intent(applicationContext, DNDService::class.java)
         startIntent.action = start
-        val calendar = Calendar.getInstance()
 
-        var millis = value - calendar.timeInMillis
-        if (millis<0){
-            millis += AlarmManager.INTERVAL_DAY
-        }
 
         viewModelScope.launch {
-            prefs.setTime(millis)
+            prefs.setTime(value)
             navigateEventChannel.send(MainActivityNavigationEvent.NavigateMainActivityToDndService(startIntent))
         }
     }

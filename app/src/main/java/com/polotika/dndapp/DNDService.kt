@@ -18,6 +18,7 @@ import android.os.SystemClock
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.first
+import java.util.*
 import java.util.function.Predicate
 
 
@@ -215,6 +216,9 @@ class DNDService : Service() {
                 s = job.await()
             }.await()
         }
+
+
+        s -=Calendar.getInstance().timeInMillis
         timer = object : CountDownTimer(s, 5000) {
             override fun onTick(millisUntilFinished: Long) {
                 Log.d(TAG, "onTick: $millisUntilFinished")

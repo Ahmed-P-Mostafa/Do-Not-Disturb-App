@@ -79,7 +79,13 @@ class MainActivity : AppCompatActivity() {
             calendar.set(Calendar.MINUTE, binding.timePicker.minute)
             val millis = calendar.timeInMillis
             viewModel.onStartButtonClicked(millis)
+            compareTime(calendar.time)
         }
+    }
+
+    fun compareTime(long: Date){
+        Log.d(TAG, "compareTime: nowTime = ${Calendar.getInstance().time}")
+        Log.d(TAG, "compareTime: dialogTime $long")
     }
 
     override fun onResume() {
