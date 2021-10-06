@@ -30,6 +30,8 @@ The things you'll need in order to use the app and how to install them
 * MVVM - Design Pattern
 * Android Service
 * RxJava
+* Hilt
+* jetpack datastore
 * Data-Binding
 * binding Adapters
 
