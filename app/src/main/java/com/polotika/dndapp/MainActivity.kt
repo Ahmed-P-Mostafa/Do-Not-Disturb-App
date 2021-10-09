@@ -1,28 +1,17 @@
 package com.polotika.dndapp
 
-import android.app.AlarmManager
 import android.app.AlertDialog
-import android.app.NotificationManager
-import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.util.Log
-import android.widget.TextView
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import com.polotika.dndapp.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import java.util.*
 
 
@@ -88,10 +77,10 @@ class MainActivity : AppCompatActivity() {
     private fun showAutoStartAlertDialog(intent: Intent) {
         AlertDialog.Builder(this).setTitle(getString(R.string.auto_start_dialog_title))
             .setMessage("${Build.MANUFACTURER} " + getString(R.string.auto_start_dialog_message))
-            .setPositiveButton(getString(R.string.auto_start_dialog_ok)){d,_ ->
+            .setPositiveButton(getString(R.string.auto_start_dialog_ok)) { d, _ ->
                 viewModel.setAutoStartEnabled()
                 startActivity(intent)
-            }.setNegativeButton(getString(R.string.auto_start_dialog_cancel)){d,_ ->
+            }.setNegativeButton(getString(R.string.auto_start_dialog_cancel)) { d, _ ->
                 d.dismiss()
             }.show()
     }
