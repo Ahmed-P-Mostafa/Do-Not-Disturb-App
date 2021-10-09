@@ -8,6 +8,7 @@ import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.qualifiers.ActivityContext
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.Dispatchers
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -19,6 +20,11 @@ object ApplicationModule {
     @Provides
     fun providesPreferencesServices(context: Context):PreferencesServices{
         return PreferencesServices(context)
+    }
+
+    @Provides
+    fun provideCoroutineDispatcher():Dispatchers{
+        return Dispatchers
     }
 
 }

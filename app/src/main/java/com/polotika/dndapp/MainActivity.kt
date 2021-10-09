@@ -1,11 +1,13 @@
 package com.polotika.dndapp
 
 import android.app.AlarmManager
+import android.app.AlertDialog
 import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -39,48 +41,14 @@ class MainActivity : AppCompatActivity() {
         observers()
 
         binding.startButton.setOnClickListener {
-          /*  val button = it as TextView
-            when (button.text) {
-                getString(R.string.start) -> {
-                    binding.startButton.text = getString(R.string.stop)
-
-
-                    val startIntent = Intent(this, DNDService::class.java)
-                    startIntent.action = START
-                    val calendar = Calendar.getInstance()
-                    val calendar2 = Calendar.getInstance()
-                    calendar.set(Calendar.HOUR_OF_DAY, binding.timePicker.hour)
-                    calendar.set(Calendar.MINUTE, binding.timePicker.minute)
-                    var millis = calendar.timeInMillis - calendar2.timeInMillis
-                    if (millis<0){
-                        millis += AlarmManager.INTERVAL_DAY
-                    }
-
-                    onStartButtonClicked(millis)
-                    startIntent.putExtra("millis", millis)
-
-                    startForegroundService(startIntent)
-                }
-                getString(R.string.stop) -> {
-                    binding.startButton.text = getString(R.string.start)
-                    val stopIntent = Intent(this, DNDService::class.java)
-                    stopIntent.action = STOP
-                    startService(stopIntent)
-                }
-            }*/
             val calendar = Calendar.getInstance()
             calendar.set(Calendar.HOUR_OF_DAY, binding.timePicker.hour)
             calendar.set(Calendar.MINUTE, binding.timePicker.minute)
             val millis = calendar.timeInMillis
             viewModel.onStartButtonClicked(millis)
-            compareTime(calendar.time)
         }
     }
 
-    fun compareTime(long: Date){
-        Log.d(TAG, "compareTime: nowTime = ${Calendar.getInstance().time}")
-        Log.d(TAG, "compareTime: dialogTime $long")
-    }
 
     override fun onResume() {
         super.onResume()
@@ -88,75 +56,44 @@ class MainActivity : AppCompatActivity() {
         viewModel.isNotificationPoliceGranted()
     }
 
-    private fun observers(){
+    private fun observers() {
         viewModel.startButtonTextEvent.observe(this@MainActivity) {
             binding.startButton.text = it
         }
 
-        lifecycleScope.launchWhenStarted {
+        lifecycleScope.launchWhenResumed {
             viewModel.navigationEvent.collect {
-                when(it){
-                    is MainActivityNavigationEvent.NavigateMainActivityToPermissionsActivity ->{
-                        startActivity(Intent(this@MainActivity,DNDPermissionActivity::class.java))
+                when (it) {
+                    is MainActivityNavigationEvent.NavigateMainActivityToPermissionsActivity -> {
+                        startActivity(Intent(this@MainActivity, DNDPermissionActivity::class.java))
                         finish()
                     }
                     is MainActivityNavigationEvent.NavigateMainActivityToDndService -> {
-                        if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             startForegroundService(it.intent)
-                        }else{
+                        } else {
                             startService(it.intent)
                         }
+                    }
+                    is MainActivityNavigationEvent.NavigateMainActivityToAutoStartPermission -> {
+                        Log.d(TAG, "observers: ${it.intent.data}")
+                        showAutoStartAlertDialog(it.intent)
+
                     }
                 }
             }
         }
-
-
     }
 
-    private fun checkForDeviceManufacture() {
-        try {
-            Log.d(TAG, "checkForDeviceManufacture: try")
-            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-            val manufacturer = Build.MANUFACTURER
-            if ("xiaomi".equals(manufacturer, ignoreCase = true)) {
-                intent.component = ComponentName(
-                    "com.miui.securitycenter",
-                    "com.miui.permcenter.autostart.AutoStartManagementActivity"
-                )
-            } else if ("oppo".equals(manufacturer, ignoreCase = true)) {
-                intent.component = ComponentName(
-                    "com.coloros.safecenter",
-                    "com.coloros.safecenter.permission.startup.StartupAppListActivity"
-                )
-            } else if ("vivo".equals(manufacturer, ignoreCase = true)) {
-                intent.component = ComponentName(
-                    "com.vivo.permissionmanager",
-                    "com.vivo.permissionmanager.activity.BgStartUpManagerActivity"
-                )
-            } else if ("Letv".equals(manufacturer, ignoreCase = true)) {
-                intent.component = ComponentName(
-                    "com.letv.android.letvsafe",
-                    "com.letv.android.letvsafe.AutobootManageActivity"
-                )
-            } else if ("Honor".equals(manufacturer, ignoreCase = true)) {
-                intent.component = ComponentName(
-                    "com.huawei.systemmanager",
-                    "com.huawei.systemmanager.optimize.process.ProtectActivity"
-                )
-            }
-            val list =
-                packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
-            if (list.size > 0) {
-                Log.d(TAG, "checkForDeviceManufacture: list > 0")
-
-            }
-            Log.d(TAG, "checkForDeviceManufacture: ${intent.component?.packageName}")
-            startActivity(intent)
-
-        } catch (e: Exception) {
-            Log.d(TAG, "checkForDeviceManufacture: catch ${e.localizedMessage}")
-            Log.e(TAG, e.toString())
-        }
+    private fun showAutoStartAlertDialog(intent: Intent) {
+        AlertDialog.Builder(this).setTitle(getString(R.string.auto_start_dialog_title))
+            .setMessage("${Build.MANUFACTURER} " + getString(R.string.auto_start_dialog_message))
+            .setPositiveButton(getString(R.string.auto_start_dialog_ok)){d,_ ->
+                viewModel.setAutoStartEnabled()
+                startActivity(intent)
+            }.setNegativeButton(getString(R.string.auto_start_dialog_cancel)){d,_ ->
+                d.dismiss()
+            }.show()
     }
+
 }

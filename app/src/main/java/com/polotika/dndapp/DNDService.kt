@@ -38,12 +38,6 @@ class DNDService : Service() {
         return null
     }
 
-    override fun onCreate() {
-        Log.d(TAG, "onCreate: ")
-        //generateForegroundNotification()
-
-    }
-
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "onStartCommand: ${SystemClock.uptimeMillis()}")
         mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -68,9 +62,6 @@ class DNDService : Service() {
                 }
             }
         }
-
-
-
         return START_STICKY
     }
 
@@ -134,7 +125,6 @@ class DNDService : Service() {
                 }
 
             })
-
     }
 
     private fun generateForegroundNotification() {
@@ -215,7 +205,6 @@ class DNDService : Service() {
                 s = job.await()
             }.await()
         }
-
 
         s -=Calendar.getInstance().timeInMillis
         timer = object : CountDownTimer(s, 5000) {

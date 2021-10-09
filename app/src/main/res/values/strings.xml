@@ -9,4 +9,8 @@
     <string name="notif_title">Do not disturb</string>
     <string name="notif_ticker">Do Not Disturb mode is on</string>
     <string name="main_title">Start now and pick time to turn it off automatically</string>
+    <string name="auto_start_dialog_title">Application need Permission</string>
+    <string name="auto_start_dialog_message">"Devices need to allow \"auto start\" permission and allow app to work in background so it can behave correctly\nSo please allow battery optimization and background limitations"</string>
+    <string name="auto_start_dialog_ok">OK</string>
+    <string name="auto_start_dialog_cancel">Cancel</string>
 </resources>
