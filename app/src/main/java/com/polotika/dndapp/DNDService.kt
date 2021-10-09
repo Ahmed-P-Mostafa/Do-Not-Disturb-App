@@ -23,7 +23,6 @@ import java.util.function.Predicate
 
 
 class DNDService : Service() {
-    // TODO try Alarm Manager in background to solve timer bug and shutdown issue
     lateinit var builder: NotificationCompat.Builder
     private var mNotificationManager: NotificationManager? = null
     private val TAG = "DNDService"

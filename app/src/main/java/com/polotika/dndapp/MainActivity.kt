@@ -23,12 +23,6 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.util.*
 
-/*
-* TODO
-*  1- set the timer in datastore and service read from datastore
-*  2- try alarm manager and figure how to calc remaining time
-*  3- give permission for auto start and notification permission for changing device mode
-*  */
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
