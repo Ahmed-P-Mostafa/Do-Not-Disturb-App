@@ -63,20 +63,6 @@ class DNDService : Service() {
         }
         return START_STICKY
     }
-
-    private fun generateMinuteText(t: Int, minutesSize: Int): String {
-        val d = t - minutesSize
-
-        val minutes: Int = (d % 60)
-        val hours: Int = ((d / 60) % 24)
-        return if (hours > 0) {
-            "$hours hours and $minutes minutes remaining until DND is off"
-        } else {
-            "$minutes minutes remaining until DND is off"
-
-        }
-    }
-
     private fun generateMinuteText(d: Int): String {
 
         val minutes: Int = (d % 60)
@@ -91,39 +77,6 @@ class DNDService : Service() {
             "$minutes minutes remaining until DND is off"
 
         }
-    }
-
-    private fun startTimer(minutesSize: Long, intervalInMinutes: Long) {
-
-        Observable.interval(intervalInMinutes, TimeUnit.MINUTES).take(minutesSize)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeOn(Schedulers.io()).subscribe(object : Observer<Long> {
-                override fun onSubscribe(d: Disposable) {
-                    startDNDMode()
-                    generateForegroundNotification()
-                }
-
-                override fun onNext(t: Long) {
-                    updateNotification(
-                        text = generateMinuteText(
-                            (t + 1).toInt(),
-                            minutesSize.toInt()
-                        ), true
-                    )
-                }
-
-                override fun onError(e: Throwable) {
-                    stopDNDMode()
-                    Log.e(TAG, "onError: ${e.localizedMessage}")
-                }
-
-                override fun onComplete() {
-                    updateNotification(text = "DND is Closed", onGoing = false)
-                    stopDNDMode()
-                    stopSelf()
-                }
-
-            })
     }
 
     private fun generateForegroundNotification() {
