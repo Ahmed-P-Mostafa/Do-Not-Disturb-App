@@ -127,7 +127,6 @@ class MainViewModel @Inject constructor(@ApplicationContext private val applicat
             Log.d(TAG, "checkForDeviceManufacture: try")
             val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
             val manufacturer = Build.MANUFACTURER
-            Build.MANUFACTURER
             if ("xiaomi".equals(manufacturer, ignoreCase = true)) {
                 intent.component = ComponentName(
                     "com.miui.securitycenter",
@@ -154,7 +153,10 @@ class MainViewModel @Inject constructor(@ApplicationContext private val applicat
                     "com.huawei.systemmanager.optimize.process.ProtectActivity"
                 )
             }else{
+                intent.addCategory(Intent.CATEGORY_DEFAULT)
                 intent.setData(Uri.parse("package:${applicationContext.packageName}"))
+                intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
 
             }
             val list =

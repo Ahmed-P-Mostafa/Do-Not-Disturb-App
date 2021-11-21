@@ -1,7 +1,9 @@
 package com.polotika.dndapp
 
 import android.app.AlertDialog
+import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -13,6 +15,8 @@ import com.polotika.dndapp.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import java.util.*
+import android.os.PowerManager
+import android.provider.Settings
 
 
 @AndroidEntryPoint
@@ -36,6 +40,10 @@ class MainActivity : AppCompatActivity() {
             val millis = calendar.timeInMillis
             viewModel.onStartButtonClicked(millis)
         }
+    }
+
+    fun throwACrash(){
+        throw ActivityNotFoundException("Test Crash")
     }
 
 
@@ -75,11 +83,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showAutoStartAlertDialog(intent: Intent) {
+
         AlertDialog.Builder(this).setTitle(getString(R.string.auto_start_dialog_title))
             .setMessage("${Build.MANUFACTURER} " + getString(R.string.auto_start_dialog_message))
             .setPositiveButton(getString(R.string.auto_start_dialog_ok)) { d, _ ->
                 viewModel.setAutoStartEnabled()
-                startActivity(intent)
+                if (intent.resolveActivity(packageManager) !=null){
+                    try {
+                        startActivity(intent)
+                    }catch (e:ActivityNotFoundException){
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            val intent = Intent()
+                            val packageName = packageName
+                            val pm = getSystemService(POWER_SERVICE) as PowerManager
+                            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                                intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+                                intent.data = Uri.parse("package:$packageName")
+                                startActivity(intent)
+                            }
+                        }
+                    }
+                }
             }.setNegativeButton(getString(R.string.auto_start_dialog_cancel)) { d, _ ->
                 d.dismiss()
             }.show()

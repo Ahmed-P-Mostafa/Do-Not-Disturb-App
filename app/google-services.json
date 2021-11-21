@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "122625740944",
+    "project_id": "dnd-app-d50d0",
+    "storage_bucket": "dnd-app-d50d0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:122625740944:android:27f88c7ed4f1a469a9c815",
+        "android_client_info": {
+          "package_name": "com.polotika.dndapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "122625740944-00p12v2e60prn6uitbu7rskkjectlg71.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.polotika.dndapp",
+            "certificate_hash": "347637297de216d534c1254a3816bea1e7686dd0"
+          }
+        },
+        {
+          "client_id": "122625740944-p31ekpgskp54auri0gdm31s9dnuh4hvf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVHgNMAAyZlOo03OgVoXmJCtSoJqKQb28"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "122625740944-p31ekpgskp54auri0gdm31s9dnuh4hvf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
