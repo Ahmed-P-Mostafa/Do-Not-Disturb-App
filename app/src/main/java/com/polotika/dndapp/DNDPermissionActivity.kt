@@ -12,32 +12,35 @@ import androidx.databinding.DataBindingUtil
 import com.polotika.dndapp.databinding.ActivityDndpermissionBinding
 
 class DNDPermissionActivity : AppCompatActivity() {
-    lateinit var binding : ActivityDndpermissionBinding
-    val manager :NotificationManager by lazy {
+    lateinit var binding: ActivityDndpermissionBinding
+    val manager: NotificationManager by lazy {
         getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     }
-    val requestResult =   registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        if (manager.isNotificationPolicyAccessGranted) {
+    val requestResult =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (manager.isNotificationPolicyAccessGranted) {
 
-            binding.nextBtn.isEnabled = true
-        } else {
-            Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
+                binding.nextBtn.isEnabled = true
+            } else {
+                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
+            }
+
         }
 
-    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.setContentView(this,R.layout.activity_dndpermission)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_dndpermission)
         binding.askPermissionBtn.setOnClickListener {
 
             requestNotificationPolicyRequest()
 
         }
         binding.nextBtn.setOnClickListener {
-            startActivity(Intent(this,MainActivity::class.java))
+            startActivity(Intent(this, MainActivity::class.java))
             finish()
         }
     }
+
     private fun requestNotificationPolicyRequest() {
 
         if (!manager.isNotificationPolicyAccessGranted) {
@@ -45,7 +48,7 @@ class DNDPermissionActivity : AppCompatActivity() {
             requestResult.launch(intent)
 
         } else {
-            startActivity(Intent(this,MainActivity::class.java))
+            startActivity(Intent(this, MainActivity::class.java))
 
         }
     }

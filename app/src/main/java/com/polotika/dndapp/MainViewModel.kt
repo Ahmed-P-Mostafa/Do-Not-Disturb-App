@@ -26,16 +26,19 @@ import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(@ApplicationContext private val applicationContext: Context,
-                                        private val prefs:PreferencesServices,private val dispatcher:Dispatchers) :ViewModel() {
+class MainViewModel @Inject constructor(
+    @ApplicationContext private val applicationContext: Context,
+    private val prefs: PreferencesServices, private val dispatcher: Dispatchers
+) : ViewModel() {
     init {
         viewModelScope.launch(dispatcher.IO) {
-            if (!prefs.isAutoStartEnabled.first()){
+            if (!prefs.isAutoStartEnabled.first()) {
                 checkForManufacture()
             }
         }
 
     }
+
     private val TAG = "MainViewModel"
 
     val startButtonTextEvent = MutableLiveData(applicationContext.getString(R.string.start))
@@ -49,9 +52,9 @@ class MainViewModel @Inject constructor(@ApplicationContext private val applicat
     val navigationEvent = navigateEventChannel.receiveAsFlow()
 
 
-
-    fun isMyServiceRunning(serviceClass: Class<*>):Boolean {
-        val manager = applicationContext.getSystemService(AppCompatActivity.ACTIVITY_SERVICE) as ActivityManager
+    fun isMyServiceRunning(serviceClass: Class<*>): Boolean {
+        val manager =
+            applicationContext.getSystemService(AppCompatActivity.ACTIVITY_SERVICE) as ActivityManager
         for (service in manager.getRunningServices(Int.MAX_VALUE)) {
             if (serviceClass.name == service.service.className) {
                 startButtonTextEvent.value = applicationContext.getString(R.string.stop)
@@ -62,8 +65,8 @@ class MainViewModel @Inject constructor(@ApplicationContext private val applicat
         return false
     }
 
-    fun isNotificationPoliceGranted(){
-        if (!manager.isNotificationPolicyAccessGranted){
+    fun isNotificationPoliceGranted() {
+        if (!manager.isNotificationPolicyAccessGranted) {
             viewModelScope.launch(dispatcher.IO) {
                 navigateEventChannel.send(MainActivityNavigationEvent.NavigateMainActivityToPermissionsActivity)
             }
@@ -83,16 +86,16 @@ class MainViewModel @Inject constructor(@ApplicationContext private val applicat
     }
 
 
-    fun onStartButtonClicked(value:Long){
-        if (!isMyServiceRunning(DNDService::class.java)){
+    fun onStartButtonClicked(value: Long) {
+        if (!isMyServiceRunning(DNDService::class.java)) {
             val calendar = Calendar.getInstance()
             var millis = value
-            if (millis<calendar.timeInMillis){
+            if (millis < calendar.timeInMillis) {
                 millis += AlarmManager.INTERVAL_DAY
             }
 
             sendStartServiceIntent(millis)
-        }else{
+        } else {
             sendStopServiceIntent()
         }
 
@@ -102,14 +105,18 @@ class MainViewModel @Inject constructor(@ApplicationContext private val applicat
         startButtonTextEvent.value = applicationContext.getString(R.string.start)
         val stopIntent = Intent(applicationContext, DNDService::class.java)
         stopIntent.action = stop
-        viewModelScope.launch(dispatcher.IO){
+        viewModelScope.launch(dispatcher.IO) {
             prefs.setTime(-1L)
-            navigateEventChannel.send(MainActivityNavigationEvent.NavigateMainActivityToDndService(stopIntent))
+            navigateEventChannel.send(
+                MainActivityNavigationEvent.NavigateMainActivityToDndService(
+                    stopIntent
+                )
+            )
 
         }
     }
 
-    private fun sendStartServiceIntent(value: Long){
+    private fun sendStartServiceIntent(value: Long) {
         startButtonTextEvent.value = applicationContext.getString(R.string.stop)
 
         val startIntent = Intent(applicationContext, DNDService::class.java)
@@ -118,11 +125,15 @@ class MainViewModel @Inject constructor(@ApplicationContext private val applicat
 
         viewModelScope.launch(dispatcher.IO) {
             prefs.setTime(value)
-            navigateEventChannel.send(MainActivityNavigationEvent.NavigateMainActivityToDndService(startIntent))
+            navigateEventChannel.send(
+                MainActivityNavigationEvent.NavigateMainActivityToDndService(
+                    startIntent
+                )
+            )
         }
     }
 
-    fun checkForManufacture(){
+    fun checkForManufacture() {
         try {
             Log.d(TAG, "checkForDeviceManufacture: try")
             val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
@@ -152,7 +163,7 @@ class MainViewModel @Inject constructor(@ApplicationContext private val applicat
                     "com.huawei.systemmanager",
                     "com.huawei.systemmanager.optimize.process.ProtectActivity"
                 )
-            }else{
+            } else {
                 intent.addCategory(Intent.CATEGORY_DEFAULT)
                 intent.setData(Uri.parse("package:${applicationContext.packageName}"))
                 intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
@@ -160,14 +171,21 @@ class MainViewModel @Inject constructor(@ApplicationContext private val applicat
 
             }
             val list =
-                applicationContext.packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
+                applicationContext.packageManager.queryIntentActivities(
+                    intent,
+                    PackageManager.MATCH_DEFAULT_ONLY
+                )
             if (list.size > 0) {
                 Log.d(TAG, "checkForDeviceManufacture: list > 0")
 
             }
             Log.d(TAG, "checkForDeviceManufacture: ${intent.component?.packageName}")
             viewModelScope.launch(dispatcher.IO) {
-                navigateEventChannel.send(MainActivityNavigationEvent.NavigateMainActivityToAutoStartPermission(intent))
+                navigateEventChannel.send(
+                    MainActivityNavigationEvent.NavigateMainActivityToAutoStartPermission(
+                        intent
+                    )
+                )
             }
 
         } catch (e: Exception) {
@@ -185,8 +203,10 @@ class MainViewModel @Inject constructor(@ApplicationContext private val applicat
 
 }
 
-sealed class MainActivityNavigationEvent(){
-    data class NavigateMainActivityToDndService(val intent: Intent):MainActivityNavigationEvent()
-    data class NavigateMainActivityToAutoStartPermission(val intent: Intent):MainActivityNavigationEvent()
-    object NavigateMainActivityToPermissionsActivity:MainActivityNavigationEvent()
+sealed class MainActivityNavigationEvent() {
+    data class NavigateMainActivityToDndService(val intent: Intent) : MainActivityNavigationEvent()
+    data class NavigateMainActivityToAutoStartPermission(val intent: Intent) :
+        MainActivityNavigationEvent()
+
+    object NavigateMainActivityToPermissionsActivity : MainActivityNavigationEvent()
 }

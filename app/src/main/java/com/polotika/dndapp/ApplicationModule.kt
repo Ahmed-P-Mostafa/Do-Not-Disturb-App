@@ -16,12 +16,12 @@ object ApplicationModule {
     fun providesContext(@ApplicationContext context: Context) = context
 
     @Provides
-    fun providesPreferencesServices(context: Context):PreferencesServices{
+    fun providesPreferencesServices(context: Context): PreferencesServices {
         return PreferencesServices(context)
     }
 
     @Provides
-    fun provideCoroutineDispatcher():Dispatchers{
+    fun provideCoroutineDispatcher(): Dispatchers {
         return Dispatchers
     }
 

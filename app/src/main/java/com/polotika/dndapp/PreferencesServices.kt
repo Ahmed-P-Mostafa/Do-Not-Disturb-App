@@ -10,29 +10,28 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-private val Context.dataStore :DataStore<Preferences> by preferencesDataStore("data_store")
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore("data_store")
 
 class PreferencesServices constructor(private val context: Context) {
-
 
 
     private val timeKey = longPreferencesKey("TIME_KEY")
     private val autoStartKey = booleanPreferencesKey("AUTO_START_KEY")
 
-    val getTime : Flow<Long> = context.dataStore.data.map { preferences ->
-        preferences[timeKey]?:-1
+    val getTime: Flow<Long> = context.dataStore.data.map { preferences ->
+        preferences[timeKey] ?: -1
     }
     val isAutoStartEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
-        preferences[autoStartKey]?:false
+        preferences[autoStartKey] ?: false
     }
 
-    suspend fun setTime(value:Long){
+    suspend fun setTime(value: Long) {
         context.dataStore.edit { preferences ->
             preferences[timeKey] = value
         }
     }
 
-    suspend fun setAutoStartEnabled(){
+    suspend fun setAutoStartEnabled() {
         context.dataStore.edit {
             it[autoStartKey] = true
         }

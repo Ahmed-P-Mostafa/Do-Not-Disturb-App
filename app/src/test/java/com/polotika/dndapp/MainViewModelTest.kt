@@ -3,9 +3,9 @@ package com.polotika.dndapp
 import junit.framework.TestCase
 import org.junit.Test
 
-class MainViewModelTest : TestCase(){
+class MainViewModelTest : TestCase() {
     @Test
-    fun `checkForManufacture() then sendIntentToActivity`(){
+    fun `checkForManufacture() then sendIntentToActivity`() {
 
     }
 }

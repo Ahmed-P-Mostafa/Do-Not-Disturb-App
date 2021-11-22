@@ -6,6 +6,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -15,8 +17,6 @@ import com.polotika.dndapp.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import java.util.*
-import android.os.PowerManager
-import android.provider.Settings
 
 
 @AndroidEntryPoint
@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun throwACrash(){
+    fun throwACrash() {
         throw ActivityNotFoundException("Test Crash")
     }
 
@@ -88,10 +88,10 @@ class MainActivity : AppCompatActivity() {
             .setMessage("${Build.MANUFACTURER} " + getString(R.string.auto_start_dialog_message))
             .setPositiveButton(getString(R.string.auto_start_dialog_ok)) { d, _ ->
                 viewModel.setAutoStartEnabled()
-                if (intent.resolveActivity(packageManager) !=null){
+                if (intent.resolveActivity(packageManager) != null) {
                     try {
                         startActivity(intent)
-                    }catch (e:ActivityNotFoundException){
+                    } catch (e: ActivityNotFoundException) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                             val intent = Intent()
                             val packageName = packageName

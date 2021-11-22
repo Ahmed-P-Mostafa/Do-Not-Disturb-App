@@ -18,42 +18,42 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/timePicker"
             android:text="@string/main_title"
-            android:textAppearance="@style/TextAppearance.AppCompat.Title"
             android:textAlignment="center"
-            android:textAllCaps="false" />
+            android:textAllCaps="false"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title"
+            app:layout_constraintBottom_toTopOf="@id/timePicker"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
 
         <TimePicker
             android:id="@+id/timePicker"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:setHour="@{viewModel.hour}"
+            android:setMinute="@{viewModel.minute}"
             android:timePickerMode="spinner"
             app:layout_constraintBottom_toTopOf="@id/startButton"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_chainStyle="packed"
-            android:setHour="@{viewModel.hour}"
-            android:setMinute="@{viewModel.minute}" />
+            app:layout_constraintVertical_chainStyle="packed" />
 
         <Button
             android:id="@+id/startButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:text="@{viewModel.startButtonTextEvent}"
-            tools:text="@string/start"
             android:textAllCaps="false"
             android:textSize="18sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/timePicker"
-            android:layout_marginTop="16dp" />
+            tools:text="@string/start" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
