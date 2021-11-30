@@ -175,12 +175,10 @@ class DNDService : Service() {
         }
         Log.d(TAG, "makeTheAppNormal: Alarms")
         mNotificationManager?.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
-        CoroutineScope(IO).launch {
-            PreferencesServices(this@DNDService).setTime(-1L)
-        }
         stopForeground(true)
         stopForeground(STOP_FOREGROUND_REMOVE)
-        timer?.cancel()
+        if (timer!=null) timer?.cancel()
+        timer = null
         stopSelf()
     }
 
